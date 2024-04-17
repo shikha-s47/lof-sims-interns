@@ -1,0 +1,12 @@
+[server]
+runOnSave = true
+enableStaticServing = true
+enableXsrfProtection = false
+enableCORS = false
+
+[theme]
+base="dark"
+primaryColor="purple"
+
+[browser]
+gatherUsageStats = false
