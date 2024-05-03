@@ -122,8 +122,8 @@ if check_password():
             'Case Title': st.text_input("Case Study Title"),
             'Case Description': st.text_area("Case Study Description"),
             'Patient Age': st.number_input("Patient Age", min_value=0, max_value=120, step=1),
-            'Patient Gender': st.selectbox("Patient Gender", ["Male", "Female", "Other"]),
-            'Patient Race': st.text_input("Patient Race/Ethnicity")  # And the rest of the inputs
+            'Patient Legal Sex': st.selectbox("Patient Legal Sex", ["Male", "Female", "Other"]),
+            'Patient Race/Ethnicity/Gender Identity/Sexuality': st.text_input("Patient Race/Ethnicity/Gender Identity/Sexuality")  # And the rest of the inputs
         }
         case_study_input = json.dumps(case_study_input)
     # # Standardized Format

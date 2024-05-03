@@ -68,7 +68,7 @@ output_format = """
 
 - **Patient Name**: `{{patient_name}}`
 - **Age**: `{{age}}`
-- **Gender**: `{{gender}}`
+- **Legal Sex**: `{{legal_sex}}`
 - **Chief Complaint**: `{{chief_complaint}}`
 - **Clinical Setting**: `{{setting}}`
 
