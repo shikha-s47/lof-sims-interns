@@ -70,7 +70,7 @@ if check_password():
     col1, col2, col3 = st.columns([1,1,4])
 
     with col1:    
-        st.info("**Include anything you'd like in the case in the text paragraph, or use the expanded form to generate the case. The AI will generate additional details as needed to complete the case**")
+        st.info("**Include desired history in the text paragraph. The AI will generate additional details as needed to propose an educational case**")
             
         # Profession selection
         # professions = st.multiselect(
