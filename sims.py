@@ -59,9 +59,10 @@ def check_password():
         return True
 
 st.title("Case Study Framework Generator")
-st.info("**Provide inputs and generate a case! Open the left sidebar to change models; default is inexpensive Haiku.**")
+
 
 if check_password():
+    st.info("**Provide inputs and generate a case! Open the left sidebar to change models; default is inexpensive Haiku.**")
 
     if "response_markdown" not in st.session_state:
         st.session_state["response_markdown"] = ""
