@@ -311,7 +311,7 @@ if check_password():
 
             if st.button("Place Orders"):
                 st.session_state.orders_placed += order_details + "\n\n"
-                orders_messages = [{"role": "user", "content": f'Generate results for the following orders: {order_details} ensuring consistency with what is expected for this case. Return only results. No commentary. If medications are ordered, note they were administered and any reactions.:{st.session_state.final_case}'}]
+                orders_messages = [{"role": "user", "content": f'Generate results ONLY for the following specific orders: {order_details} ensuring result consistency with the following case. If medications are ordered, note they were administered and any reactions.:{st.session_state.final_case}. Return only results. No other commentary.'}]
                 orders_results = llm_call("anthropic/claude-3-sonnet", orders_messages)
                 st.session_state.results += orders_results['choices'][0]['message']['content'] + "\n\n"
             
