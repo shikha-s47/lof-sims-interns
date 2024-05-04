@@ -10,12 +10,12 @@ import tempfile
 import requests
 import json
 import base64
-
 import random
+from sims import llm_call
 
 st.set_page_config(page_title='Simulated Chat', layout = 'centered', page_icon = ':stethoscope:', initial_sidebar_state = 'expanded')
 
-def assign_random_voice():
+def assign_random_voice(sex):
     """
     Randomly assigns one of the specified strings to the variable 'voice'.
 
@@ -25,7 +25,13 @@ def assign_random_voice():
     The possible voices are 'alloy', 'echo', 'fable', 'onyx', 'nova', and 'shimmer'.
     """
     # List of possible voices
-    voices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer']
+    male_voices = [ 'echo', 'fable', 'onyx' ]
+    female_voices = ['alloy',  'nova', 'shimmer']
+    
+    if sex == 'male':
+        voices = male_voices
+    else:
+        voices = female_voices
     
     # Randomly choose one voice from the list
     voice = random.choice(voices)
@@ -77,51 +83,6 @@ def autoplay_local_audio(filepath: str):
         unsafe_allow_html=True,
     )
 
-@st.cache_data
-def extract_patient_door_chart_section(text):
-    """
-    Extracts the PATIENT DOOR CHART section from the given text string and returns it.
-    
-    Args:
-    - text (str): The input text containing multiple sections, including "PATIENT DOOR CHART".
-    
-    Returns:
-    - str: The extracted "PATIENT DOOR CHART" section through the end of the provided text.
-    """
-    # Define the start marker for the section to extract
-    start_marker = "## PATIENT DOOR CHART"
-    
-    # Find the position where the relevant section starts
-    start_index = text.find(start_marker)
-    
-    # If the section is found, extract and return the text from that point onwards
-    if start_index != -1:
-        return text[start_index:]
-    else:
-        # Return a message indicating the section was not found if it doesn't exist in the string
-        return "PATIENT DOOR CHART section not found in the provided text."
-# st.write(f'Here is the case {st.session_state.final_case}')
-
-try:
-    extracted_section = extract_patient_door_chart_section(st.session_state.final_case)
-    st.info(extracted_section)
-    if "messages" not in st.session_state:
-        st.session_state.messages = [{"role": "system", "content": f'{sim_persona} Here are the specifics for your persona: {st.session_state.final_case}'}, ]
-except Exception as e:
-    st.error(f"Please return to the main page. An error occurred. Please do not 're-load' when in the middle of a conversation. Here are the error details: {e}. ")
-
-
-
-#################################################
-
-# Set OpenAI API key from Streamlit secrets
-groq_client = Groq(api_key = st.secrets['GROQ_API_KEY'])
-
-# st.set_page_config(
-#     page_title='Fast Helpful Chat',
-#     page_icon='🌌',
-#     initial_sidebar_state='expanded'
-# )
 def check_password():
     """Returns `True` if the user had the correct password."""
 
@@ -155,6 +116,54 @@ def parse_groq_stream(stream):
         if chunk.choices:
             if chunk.choices[0].delta.content is not None:
                 yield chunk.choices[0].delta.content
+
+@st.cache_data
+def extract_patient_door_chart_section(text):
+    """
+    Extracts the PATIENT DOOR CHART section from the given text string and returns it.
+    
+    Args:
+    - text (str): The input text containing multiple sections, including "PATIENT DOOR CHART".
+    
+    Returns:
+    - str: The extracted "PATIENT DOOR CHART" section through the end of the provided text.
+    """
+    # Define the start marker for the section to extract
+    start_marker = "## PATIENT DOOR CHART"
+    
+    # Find the position where the relevant section starts
+    start_index = text.find(start_marker)
+    
+    # If the section is found, extract and return the text from that point onwards
+    if start_index != -1:
+        return text[start_index:]
+    else:
+        # Return a message indicating the section was not found if it doesn't exist in the string
+        return "PATIENT DOOR CHART section not found in the provided text."
+# st.write(f'Here is the case {st.session_state.final_case}')
+
+try:
+    extracted_section = extract_patient_door_chart_section(st.session_state.final_case)
+    st.info(extracted_section)
+    if "messages" not in st.session_state:
+        st.session_state.messages = [{"role": "system", "content": f'{sim_persona} Here are the specifics for your persona: {st.session_state.final_case}'}, ]
+except Exception as e:
+    st.error(f"Please return to the main page. An error occurred. Please do not 're-load' when in the middle of a conversation. Here are the error details: {e}. ")
+
+messages_sex =[{"role": "user", "content": f'Analyze the following content and return only the sex, e.g., male, female, or other. Return nothing else. {extracted_section}'}]
+sex = llm_call("anthropic/claude-3-haiku", messages_sex)
+
+#################################################
+
+# Set OpenAI API key from Streamlit secrets
+groq_client = Groq(api_key = st.secrets['GROQ_API_KEY'])
+
+# st.set_page_config(
+#     page_title='Fast Helpful Chat',
+#     page_icon='🌌',
+#     initial_sidebar_state='expanded'
+# )
+
 
 st.title("Clinical Simulator Chat")
 # st.caption('Powered by [Groq](https://groq.com/).')
@@ -191,7 +200,7 @@ if check_password():
         
     if "voice" not in st.session_state:
         # Example usage:
-        st.session_state["voice"] = assign_random_voice()
+        st.session_state["voice"] = assign_random_voice(sex)
 
             # Audio selection
     

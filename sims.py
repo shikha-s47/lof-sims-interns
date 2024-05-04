@@ -23,7 +23,7 @@ def llm_call(model, messages):
             "Authorization": "Bearer " + st.secrets["OPENROUTER_API_KEY"],  # Fixed to correct access to secrets
             "Content-Type": "application/json",
             "HTTP-Referer": "https://fsm-gpt-med-ed.streamlit.app",  # To identify your app
-            "X-Title": "GPT and Med Ed",
+            "X-Title": "lof-sims",
         },
         data=json.dumps({
             "model": model,
