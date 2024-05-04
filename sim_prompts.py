@@ -134,7 +134,7 @@ Given the specified orders, alongside the patient case, create a set of results 
 - Keep the response focused exclusively on providing the requested lab results and pertinent information, avoiding unrelated details or commentary.
 - Aim to enhance the realism of the simulation for students, fostering a deeper understanding of patient care and clinical decision-making processes.
 
-Example (note no commentary, only results):
+Example (N.B no additional words provided at all. This is the goal - simply generate the results):
 
 Sample User Input: 
 d-dimer
