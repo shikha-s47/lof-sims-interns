@@ -161,7 +161,8 @@ st.title("Clinical Simulator Chat")
 
 
 if check_password():
-    st.info("Enter your questions at the bottom of the page!")
+    st.info("Type your questions at the bottom of the page or use voice input! You may need to right click your Chrome browser tab to unmute this website and also accept the microphone permissions.")
+
     
     st.sidebar.title('Customization')
     st.session_state.model = st.sidebar.selectbox(
@@ -192,7 +193,8 @@ if check_password():
         # Example usage:
         st.session_state["voice"] = assign_random_voice()
 
-            # Audio selection    
+            # Audio selection
+    
     input_source = st.radio("Input source", ("Text", "Microphone"), index=0)
     st.session_state.audio_off = st.checkbox("Turn off voice generation", value=False) 
     # Display chat messages from history on app rerun
