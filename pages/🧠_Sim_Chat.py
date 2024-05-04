@@ -83,8 +83,8 @@ def parse_groq_stream(stream):
             if chunk.choices[0].delta.content is not None:
                 yield chunk.choices[0].delta.content
 
-st.title("Fast Helpful Chat")
-st.caption('Powered by [Groq](https://groq.com/).')
+st.title("Clinical Simulator Chat")
+# st.caption('Powered by [Groq](https://groq.com/).')
 
 
 if check_password():
