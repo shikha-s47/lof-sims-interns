@@ -10,6 +10,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state='collapsed'
 )
+def init_session():
+    if "final_case" not in st.session_state:
+        st.session_state["final_case"] = ""
+        
+
 
 def llm_call(model, messages):
     response = requests.post(
@@ -59,13 +64,17 @@ def check_password():
         return True
 
 st.title("Case Study Framework Generator")
-
+init_session()
 
 if check_password():
     st.info("**Provide inputs and generate a case! Open the left sidebar to change models; default is inexpensive Haiku.**")
 
     if "response_markdown" not in st.session_state:
         st.session_state["response_markdown"] = ""
+        
+        
+    if "expanded" not in st.session_state:
+        st.session_state["expanded"] = True
 
     col1, col2, col3 = st.columns([1,1,4])
 
@@ -133,8 +142,9 @@ if check_password():
         submit_button = st.button("Submit")
 
     if submit_button:
-        # Build the message dictionary according to your model's requirements
 
+        # Build the message dictionary according to your model's requirements
+        
             
         messages = [{"role": "system", "content": f'Use input provided with additional AI generated content to fully flesh out a clinical case optimized for simulation using the following format: {output_format}'},
         {"role": "user", "content": f"""
@@ -148,13 +158,23 @@ if check_password():
         st.session_state.response_markdown = response_content['choices'][0]['message']['content']
     if st.session_state.response_markdown != "":
         with col3:
-            with st.container():
-            # Display the response from LLM call
-                st.success("Case Study Framework Generated!")
-                # st.json(response_content)
-                
+            
+        # Display the response from LLM call
+            st.success("Case Study Framework Generated!")
+            # st.json(response_content)
+            with st.expander("View Full Case", expanded = st.session_state.expanded):
                 st.markdown(st.session_state.response_markdown)
+                st.session_state.expanded = False
         
         with col2:
             html = markdown2.markdown(st.session_state.response_markdown, extras=["tables"])
             st.download_button('Download Followup Response', html, f'followup_response.html', 'text/html')
+    
+        with col3:        
+            if st.button("Edit Case"):
+                st.info("Please edit the case as needed while leaving other characters, e.g., '#' and '*', in place.")
+                st.session_state["final_case"] = st.text_area("Edit Case", st.session_state.response_markdown, height = 1000) #, help="Edit the case as needed.")
+                
+            if st.session_state["final_case"] != "":
+                if st.button("Send case to the simulator!"):
+                    st.page_link("pages/🧠_Sim_Chat.py", label= "Click Here to Wake the Simulator", icon = "🧠")
