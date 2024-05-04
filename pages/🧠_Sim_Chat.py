@@ -201,6 +201,12 @@ if check_password():
     if "voice" not in st.session_state:
         # Example usage:
         st.session_state["voice"] = assign_random_voice(sex)
+        
+    if "results" not in st.session_state:
+        st.session_state["results"] = ""
+        
+    if "orders_placed" not in st.session_state:
+        st.session_state["orders_placed"] = ""
 
             # Audio selection
     
@@ -298,6 +304,18 @@ if check_password():
         html = markdown2.markdown(conversation_str, extras=["tables"])
         st.download_button('Download the conversation when done!', html, f'sim_response.html', 'text/html')
     
-    # if st.sidebar.button("Clear chat history"):
-    #     st.session_state.messages = []
-        
+    orders = st.sidebar.checkbox("Place Orders", value=False)
+    if orders:
+        with st.sidebar:
+            order_details = st.text_input("Orders", key="order")
+
+            if st.button("Place Orders"):
+                st.session_state.orders_placed += order_details + "\n\n"
+                orders_messages = [{"role": "user", "content": f'Generate results for the following orders: {order_details} ensuring consistency with what is expected for this case. Return only results. No commentary. If medications are ordered, note they were administered and any reactions.:{st.session_state.final_case}'}]
+                orders_results = llm_call("anthropic/claude-3-sonnet", orders_messages)
+                st.session_state.results += orders_results['choices'][0]['message']['content'] + "\n\n"
+            
+            with st.expander("Prior Orders", expanded = False):                
+                st.write(st.session_state.orders_placed)
+            with st.expander("All Results", expanded = False):
+                st.write(st.session_state.results)
