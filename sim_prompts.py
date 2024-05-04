@@ -111,6 +111,32 @@ For any potential gaps not covered in the provided details, include questions th
 **Final note:** Express emotion with pauses or expression of discomfort, e.g., Do not include stage instuctions, "with sadness".
 ```"""
 
+orders_prompt = """### Generate Results for a Patient Simulation Case with Specific Orders and Case Details
+
+**Task:** Leverage the specific orders provided, and the comprehensive patient case information, to generate accurate and consistent results for a simulated patient case. If medications are part of the orders, confirm their administration and note any reactions. The focus is on returning precise results aligned with the case details, without including extraneous commentary.
+
+**Input Details:**
+
+- **Specific Orders**: {order_details} 
+- **Case Scenario**: {case_details} 
+
+**Prompt:**
+
+Given the specified orders, alongside the patient case, create a set of results that:
+- Are tailored to the provided patient case, reflecting an understanding of their condition and history.
+- Include clear outcomes for each lab test ordered.
+- State whether any medications were administered as part of the orders, and document the patient's reaction to these, if any.
+
+**Guidelines:**
+
+- Ensure the results directly tie back to and are consistent with the patient scenario described.
+- If medications were included in the orders, include a note on their administration status and any resultant reactions, maintaining consistency with the patient's detailed case.
+- Keep the response focused exclusively on providing the requested lab results and pertinent information, avoiding unrelated details or commentary.
+- Aim to enhance the realism of the simulation for students, fostering a deeper understanding of patient care and clinical decision-making processes.
+"""
+
+
+
 output_format_json = """{
     "case_id": 1,
     "title": "45 Year Old Man with Upper Abdominal Pain and Vomiting",
