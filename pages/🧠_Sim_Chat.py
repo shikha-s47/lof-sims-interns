@@ -195,7 +195,7 @@ if check_password():
 
             # Audio selection
     
-    input_source = st.radio("Input source", ("Text", "Microphone"), index=0)
+    input_source = st.radio("Choose to type or speak!", ("Text", "Microphone"), index=0)
     st.session_state.audio_off = st.checkbox("Turn off voice generation", value=False) 
     # Display chat messages from history on app rerun
     for message in st.session_state.messages:
