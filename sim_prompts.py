@@ -130,7 +130,7 @@ Given the specified orders, alongside the patient case, create a set of results 
 **Guidelines:**
 
 - Ensure the results directly tie back to and are consistent with the patient scenario described.
-- If medications were included in the orders, include a note on their administration status and any resultant reactions, maintaining consistency with the patient's detailed case.
+- Only if medications were included in the orders, include a note on their administration status and any resultant reactions, maintaining consistency with the patient's detailed case.
 - Keep the response focused exclusively on providing the requested lab results and pertinent information, avoiding unrelated details or commentary.
 - Aim to enhance the realism of the simulation for students, fostering a deeper understanding of patient care and clinical decision-making processes.
 """
