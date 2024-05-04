@@ -108,6 +108,7 @@ Considering the in-depth information provided, create a fictional patient person
 For any potential gaps not covered in the provided details, include questions that would naturally arise based on the existing information, designed to deepen understanding and empathy towards the patient's situation.
 
 **Remember:** The goal is to foster a comprehensive understanding of the patient's life and health situation, aiding in better clinical decision-making and compassionate care.
+**Final note:** Express emotion with pauses or expression of discomfort, e.g., Do not include stage instuctions, "with sadness".
 ```"""
 
 output_format_json = """{

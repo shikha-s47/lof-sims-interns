@@ -198,6 +198,20 @@ tests-mypy = ["mypy (>=1.6)", "pytest-mypy-plugins"]
 tests-no-zope = ["attrs[tests-mypy]", "cloudpickle", "hypothesis", "pympler", "pytest (>=4.3.0)", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "audio-recorder-streamlit"
+version = "0.0.8"
+description = ""
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "audio-recorder-streamlit-0.0.8.tar.gz", hash = "sha256:f7253b9291a040769188ae76e7b1dd27d7004f87691af73a848d939d673e2ec3"},
+    {file = "audio_recorder_streamlit-0.0.8-py3-none-any.whl", hash = "sha256:c7f2fba58e55535830dc203418ab9b29aff3baf3248a219f6ef31d775ce44c3c"},
+]
+
+[package.dependencies]
+streamlit = ">=0.63"
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.12.3"
 description = "Screen-scraping library"
@@ -3057,4 +3071,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "f2f301c3f28348fe7a6dcf3a2ee2eab7be0055481fec2bf75b9bb292f4a148eb"
+content-hash = "5bb4f1964d599670577db6bee11ab4c5c070d037c5bfc4dc24b96fc6eeb08e17"
