@@ -310,11 +310,11 @@ if check_password():
             order_details = st.text_input("Orders", key="order")
 
             if st.button("Place Orders"):
-                st.session_state.orders_placed += order_details + "\n\n"
+                st.session_state.orders_placed = order_details + "\n\n" + st.session_state.orders_placed
                 prompt = orders_prompt.format(order_details=order_details, case_details=st.session_state.final_case)
                 orders_messages = [{"role": "user", "content": prompt}]
                 orders_results = llm_call("anthropic/claude-3-sonnet", orders_messages)
-                st.session_state.results += orders_results['choices'][0]['message']['content'] + "\n\n"
+                st.session_state.results = orders_results['choices'][0]['message']['content'] + "\n\n" + st.session_state.results
             
             with st.expander("Prior Orders", expanded = False):                
                 st.write(st.session_state.orders_placed)
