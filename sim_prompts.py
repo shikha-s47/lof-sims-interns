@@ -143,7 +143,46 @@ Sample Generated Output:
 D-DIMER: 140.00, REF: D-DIMER: < 240.00 ng/mL DDU
 """
 
+assessment_prompt = """**Title:** Grading and Assessment of Simulated Patient Interaction by Medical Student Level
 
+*Instructions:*
+
+Given the inputs of a student's level (e.g., first-year medical student) and detailed case information about a simulated patient, please analyze a transcript of the student's interaction with the patient, including the decisions regarding specific orders that were placed. Utilize the following rubric to grade and assess the interaction:
+
+**Input Details:**
+
+- **Student Levels**: {student_level} 
+- **Case Scenario**: {case_details} 
+- **Conversation Transcript**: {conversation_transcript} 
+- **Orders Placed**: {orders_placed} 
+- **Results**: {results}
+
+**Rubric:**
+
+1. **Empathy Expression:**
+   - **Criteria:** Presence of empathetic phrases, appropriate tone, and active listening indicators.
+   - **Scoring:** Rate on a scale of 1-5, where 1 is lacking and 5 is exceptional.
+
+2. **Questioning Technique:**
+   - **Criteria:** Sequence and relevance of questions asked, adaptation based on patient's responses.
+   - **Scoring:** Rate on a scale of 1-5, considering both the appropriateness and adaptiveness of questioning.
+
+3. **Clinical Orders:**
+   - **Criteria:** Relevance and timeliness of orders placed in response to the patient’s condition.
+   - **Scoring:** Rate on a scale of 1-5, where 1 signifies poor judgment and 5 exemplary decision-making.
+
+4. **Communication Effectiveness:**
+   - **Criteria:** The ability to accurately convey results, the suspected diagnosis, and necessary steps to the patient in an understandable manner.
+   - **Scoring:** Rate on a scale of 1-5, focusing on clarity, accuracy, and the student’s ability to maintain patient comprehension and comfort.
+
+*Final Assessment:*
+
+- Provide a summary of the strengths observed during the interaction.
+- Offer constructive feedback on areas for improvement.
+- Suggest specific actions or learning resources for enhancing skills in identified weak areas.
+
+**Please proceed to grade and assess the student's performance based on the provided rubric and transcript.**
+"""
 
 output_format_json = """{
     "case_id": 1,

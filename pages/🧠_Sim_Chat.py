@@ -150,8 +150,11 @@ try:
 except Exception as e:
     st.error(f"Please return to the main page. An error occurred. Please do not 're-load' when in the middle of a conversation. Here are the error details: {e}. ")
 
-messages_sex =[{"role": "user", "content": f'Analyze the following content and return only the sex, e.g., male, female, or other. Return nothing else. {extracted_section}'}]
-sex = llm_call("anthropic/claude-3-haiku", messages_sex)
+if "sex" not in st.session_state:
+    st.session_state.sex = ""
+if st.session_state.sex == "":
+    messages_sex =[{"role": "user", "content": f'Analyze the following content and return only the sex, e.g., male, female, or other. Return nothing else. {extracted_section}'}]
+    st.session_state.sex = llm_call("anthropic/claude-3-haiku", messages_sex)
 
 #################################################
 
@@ -200,13 +203,19 @@ if check_password():
         
     if "voice" not in st.session_state:
         # Example usage:
-        st.session_state["voice"] = assign_random_voice(sex)
+        st.session_state["voice"] = assign_random_voice(st.session_state.sex)
         
     if "results" not in st.session_state:
         st.session_state["results"] = ""
         
     if "orders_placed" not in st.session_state:
         st.session_state["orders_placed"] = ""
+        
+    if "conversation_string" not in st.session_state:
+        st.session_state["conversation_string"] = ""
+        
+    if "assessment" not in st.session_state:
+        st.session_state["assessment"] = ""
 
             # Audio selection
     
@@ -301,6 +310,7 @@ if check_password():
                 conversation_str += "👩‍⚕️: " + message["content"] + "\n\n"
             elif message["role"] == "assistant":
                 conversation_str += "🤒: " + message["content"] + "\n\n"
+        st.session_state.conversation_string = conversation_str
         html = markdown2.markdown(conversation_str, extras=["tables"])
         st.download_button('Download the conversation when done!', html, f'sim_response.html', 'text/html')
     
@@ -320,3 +330,22 @@ if check_password():
                 st.write(st.session_state.orders_placed)
             with st.expander("All Results", expanded = False):
                 st.write(st.session_state.results)
+                
+    assess = st.sidebar.checkbox("Assess", value=False)
+    if assess:
+        student_level = st.sidebar.selectbox("Student Level", ["1st Year Medical Student", "2nd Year Medical Student", "3rd Year Medical Student", "4th Year Medical Student"])
+        prompt = assessment_prompt.format(student_level = student_level, case_details=st.session_state.final_case, conversation_transcript=st.session_state.conversation_string, orders_placed=st.session_state.orders_placed, results=st.session_state.results)
+        assessment_messages = [{"role": "user", "content": prompt}]
+        if st.sidebar.button("Formulate Assessment"):
+            with st.spinner("Formulating Assessment..."):
+                try:
+                    assessment_response = llm_call("anthropic/claude-3-sonnet", assessment_messages)
+                except Exception as e:
+                    st.error("Error formulating assessment, be sure to download the transcript and try again. Here are the error details: " + str(e))
+            st.session_state.assessment = assessment_response['choices'][0]['message']['content']
+            st.write(st.session_state.assessment)
+        if st.session_state.assessment:
+            html = markdown2.markdown(st.session_state.assessment, extras=["tables"])
+            st.sidebar.download_button('Download the assessment when done!', html, f'assessment.html', 'text/html')
+        
+        

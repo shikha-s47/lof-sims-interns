@@ -175,6 +175,9 @@ if check_password():
                 st.info("Please edit the case as needed while leaving other characters, e.g., '#' and '*', in place.")
                 st.session_state["final_case"] = st.text_area("Edit Case", st.session_state.response_markdown, height = 1000) #, help="Edit the case as needed.")
                 
+            # if st.button("Generate Goals and Rubric"):
+            #     st.info("This will use the custom case you created and generate goals and rubric for interactions with the simulator.")
+                
             if st.session_state["final_case"] != "":
                 if st.button("Send case to the simulator!"):
                     st.page_link("pages/🧠_Sim_Chat.py", label= "Click Here to Wake the Simulator", icon = "🧠")
