@@ -154,7 +154,9 @@ if check_password():
         }]
     
         # Call the llm_call function with the model and messages as arguments
-        response_content = llm_call(model_choice, messages)
+        with col2:
+            with st.spinner("Assembling Case... Please wait."):
+                response_content = llm_call(model_choice, messages)
         st.session_state.response_markdown = response_content['choices'][0]['message']['content']
     if st.session_state.response_markdown != "":
         with col3:
@@ -168,7 +170,7 @@ if check_password():
         
         with col2:
             html = markdown2.markdown(st.session_state.response_markdown, extras=["tables"])
-            st.download_button('Download Followup Response', html, f'followup_response.html', 'text/html')
+            st.download_button('Download the Case', html, f'case.html', 'text/html')
     
         with col3:        
             if st.button("Edit Case"):

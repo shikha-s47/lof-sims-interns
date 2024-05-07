@@ -3,6 +3,7 @@ from sim_prompts import *
 import markdown2
 from groq import Groq
 from openai import OpenAI
+import os
 
 from audio_recorder_streamlit import audio_recorder
 from prompts import *
@@ -271,23 +272,30 @@ if check_password():
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as fp:
                 fp.write(audio_bytes)
                 audio_file_path = fp.name
-            prompt = transcribe_audio(audio_file_path)
+            with st.spinner("Transcribing audio... Please wait."):
+                prompt = transcribe_audio(audio_file_path)
             st.session_state.messages.append({"role": "user", "content": prompt})
             # Display user message in chat message container
             with st.chat_message("user", avatar="👩‍⚕️"):
                 st.markdown(prompt)
                 
+            # Clear audio_bytes after processing
+            audio_bytes = None
+            # Remove the temporary file after processing
+            os.remove(audio_file_path)
+                
                 # Display assistant response in chat message container
-            with st.chat_message("assistant", avatar="🤒"):        
-                stream = groq_client.chat.completions.create(
-                    model=st.session_state["model"],
-                    messages=[
-                        {"role": m["role"], "content": m["content"]}
-                        for m in st.session_state.messages
-                    ],
-                    temperature=0.3,
-                    stream=True,
-                )
+            with st.chat_message("assistant", avatar="🤒"):
+                with st.spinner("Answering... Please wait."):        
+                    stream = groq_client.chat.completions.create(
+                        model=st.session_state["model"],
+                        messages=[
+                            {"role": m["role"], "content": m["content"]}
+                            for m in st.session_state.messages
+                        ],
+                        temperature=0.3,
+                        stream=True,
+                    )
                 st.session_state.sim_response = st.write_stream(parse_groq_stream(stream))
                 
             st.session_state.messages.append({"role": "assistant", "content": st.session_state.sim_response})
@@ -296,11 +304,11 @@ if check_password():
     if st.session_state.audio_off == False:
 
         if st.session_state.sim_response:
-
-            talk_stream("tts-1", st.session_state.voice, st.session_state.sim_response)
+            with st.spinner("Synthesizing audio... Please wait."):
+                talk_stream("tts-1", st.session_state.voice, st.session_state.sim_response)
             autoplay_local_audio("last_interviewer.mp3")
             st.info("Note - this is an AI synthesized voice.")            
-                
+            st.session_state.sim_response = ""    
                 
 
     if st.session_state["sim_response"]:
@@ -323,7 +331,8 @@ if check_password():
                 st.session_state.orders_placed = order_details + "\n\n" + st.session_state.orders_placed
                 prompt = orders_prompt.format(order_details=order_details, case_details=st.session_state.final_case)
                 orders_messages = [{"role": "user", "content": prompt}]
-                orders_results = llm_call("anthropic/claude-3-sonnet", orders_messages)
+                with st.spinner("Transmitting Orders... Please wait."):
+                    orders_results = llm_call("anthropic/claude-3-sonnet", orders_messages)
                 st.session_state.results = orders_results['choices'][0]['message']['content'] + "\n\n" + st.session_state.results
             
             with st.expander("Prior Orders", expanded = False):                
@@ -337,15 +346,19 @@ if check_password():
         prompt = assessment_prompt.format(student_level = student_level, case_details=st.session_state.final_case, conversation_transcript=st.session_state.conversation_string, orders_placed=st.session_state.orders_placed, results=st.session_state.results)
         assessment_messages = [{"role": "user", "content": prompt}]
         if st.sidebar.button("Formulate Assessment"):
-            with st.spinner("Formulating Assessment..."):
-                try:
-                    assessment_response = llm_call("anthropic/claude-3-sonnet", assessment_messages)
-                except Exception as e:
-                    st.error("Error formulating assessment, be sure to download the transcript and try again. Here are the error details: " + str(e))
+            with st.sidebar:
+                with st.spinner("Formulating Assessment... Please wait."):
+                    try:
+                        assessment_response = llm_call("anthropic/claude-3-sonnet", assessment_messages)
+                    except Exception as e:
+                        st.error("Error formulating assessment, be sure to download the transcript and try again. Here are the error details: " + str(e))
             st.session_state.assessment = assessment_response['choices'][0]['message']['content']
-            st.write(st.session_state.assessment)
+        
         if st.session_state.assessment:
-            html = markdown2.markdown(st.session_state.assessment, extras=["tables"])
-            st.sidebar.download_button('Download the assessment when done!', html, f'assessment.html', 'text/html')
+            with st.expander("Assessment", expanded = False):
+                st.write(st.session_state.assessment)
+            if st.session_state.assessment:
+                html = markdown2.markdown(st.session_state.assessment, extras=["tables"])
+                st.sidebar.download_button('Download the assessment when done!', html, f'assessment.html', 'text/html')
         
         
