@@ -340,7 +340,7 @@ if check_password():
             with st.expander("All Results", expanded = False):
                 st.write(st.session_state.results)
                 
-    assess = st.sidebar.checkbox("Assess", value=False)
+    assess = st.sidebar.checkbox("Assess Performance", value=False)
     if assess:
         student_level = st.sidebar.selectbox("Student Level", ["1st Year Medical Student", "2nd Year Medical Student", "3rd Year Medical Student", "4th Year Medical Student"])
         prompt = assessment_prompt.format(student_level = student_level, case_details=st.session_state.final_case, conversation_transcript=st.session_state.conversation_string, orders_placed=st.session_state.orders_placed, results=st.session_state.results)
