@@ -180,6 +180,9 @@ if check_password():
                     st.warning("Please edit the case as needed while leaving other characters, e.g., '#' and '*', in place. Enter control-enter or command-enter to save edits!")
                     
                     st.session_state["final_case"]  = st.text_area("Edit Case, enter control-enter or command-enter to save edits!", st.session_state.response_markdown, height = 1000) 
+                    
+            else:
+                st.session_state["final_case"] = st.session_state.response_markdown
 
             # else:
             #     st.session_state["final_case"] = st.session_state.response_markdown
