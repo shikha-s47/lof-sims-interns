@@ -322,12 +322,12 @@ if check_password():
         html = markdown2.markdown(conversation_str, extras=["tables"])
         st.download_button('Download the conversation when done!', html, f'sim_response.html', 'text/html')
     
-    orders = st.sidebar.checkbox("Place Orders", value=False)
+    orders = st.sidebar.checkbox("Write Orders", value=False)
     if orders:
         with st.sidebar:
             order_details = st.text_input("Orders", key="order")
 
-            if st.button("Place Orders"):
+            if st.button("Submit Orders"):
                 st.session_state.orders_placed = order_details + "\n\n" + st.session_state.orders_placed
                 prompt = orders_prompt.format(order_details=order_details, case_details=st.session_state.final_case)
                 orders_messages = [{"role": "user", "content": prompt}]
@@ -339,7 +339,7 @@ if check_password():
                 st.write(st.session_state.orders_placed)
             with st.expander("All Results", expanded = False):
                 st.write(st.session_state.results)
-                
+    st.sidebar.divider()         
     assess = st.sidebar.checkbox("Assess Interaction", value=False)
     if assess:
         student_level = st.sidebar.selectbox("Student Level", ["1st Year Medical Student", "2nd Year Medical Student", "3rd Year Medical Student", "4th Year Medical Student"])
