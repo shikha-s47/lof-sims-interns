@@ -76,7 +76,7 @@ if check_password():
     if "expanded" not in st.session_state:
         st.session_state["expanded"] = True
 
-    col1, col2, col3 = st.columns([1,1,4])
+    col1, col2, col3 = st.columns([1,0.5,4])
 
     with col1:    
         st.info("**Include desired history in the text paragraph. The AI will generate additional details as needed to draft an educational case.**")
@@ -129,16 +129,17 @@ if check_password():
 
         case_study_input = {
             'Case Title': st.text_input("Case Study Title"),
-            'Case Description': st.text_area("Case Study Description"),
-            'Patient Age': st.number_input("Patient Age", min_value=0, max_value=120, step=1),
-            'Patient Legal Sex': st.selectbox("Patient Legal Sex", ["Male", "Female", "Other"]),
-            'Patient Race/Ethnicity/Gender Identity/Sexuality': st.text_input("Patient Race/Ethnicity/Gender Identity/Sexuality")  # And the rest of the inputs
+            'Case Description': st.text_area("Case Study Description, as detailed or brief as desired, e.g., 65F with acute chest pain...", height = 200),
+            'Case Primary Diagnosis': st.text_input("Case Primary Diagnosis, e.g., Pulmonary Embolism"),
+            # 'Patient Age': st.number_input("Patient Age", min_value=0, max_value=120, step=1),
+            # 'Patient Legal Sex': st.selectbox("Patient Legal Sex", ["Male", "Female", "Other"]),
+            # 'Patient Race/Ethnicity/Gender Identity/Sexuality': st.text_input("Patient Race/Ethnicity/Gender Identity/Sexuality")  # And the rest of the inputs
         }
         case_study_input = json.dumps(case_study_input)
     # # Standardized Format
     # standardized_format = st.selectbox("Standardized Format", ["Format 1", "Format 2", "Format 3"])
-    with col2: 
-        st.info("Click submit when ready to generate a case! A download button will appear once generated.")
+    with col1: 
+        st.info("Click submit when ready to generate a case! A download button will appear in the next column once generated.")
         submit_button = st.button("Submit")
 
     if submit_button:
@@ -169,13 +170,19 @@ if check_password():
                 st.session_state.expanded = False
         
         with col2:
+            st.info("Download or edit the case and begin the simulator!")
             html = markdown2.markdown(st.session_state.response_markdown, extras=["tables"])
             st.download_button('Download the Case', html, f'case.html', 'text/html')
-    
-        with col3:        
-            if st.button("Edit Case"):
-                st.info("Please edit the case as needed while leaving other characters, e.g., '#' and '*', in place.")
-                st.session_state["final_case"] = st.text_area("Edit Case", st.session_state.response_markdown, height = 1000) #, help="Edit the case as needed.")
+        
+            if st.checkbox("Edit Case (Scroll Down)", value = False):
+                with col3:
+                    st.session_state.expanded = False
+                    st.warning("Please edit the case as needed while leaving other characters, e.g., '#' and '*', in place. Enter control-enter or command-enter to save edits!")
+                    
+                    st.session_state["final_case"]  = st.text_area("Edit Case, enter control-enter or command-enter to save edits!", st.session_state.response_markdown, height = 1000) 
+
+            # else:
+            #     st.session_state["final_case"] = st.session_state.response_markdown
                 
             # if st.button("Generate Goals and Rubric"):
             #     st.info("This will use the custom case you created and generate goals and rubric for interactions with the simulator.")

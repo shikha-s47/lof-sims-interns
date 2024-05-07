@@ -217,6 +217,9 @@ if check_password():
         
     if "assessment" not in st.session_state:
         st.session_state["assessment"] = ""
+        
+    if "last_audio_size" not in st.session_state:
+        st.session_state["last_audio_size"] = 0
 
             # Audio selection
     
@@ -259,46 +262,67 @@ if check_password():
             st.session_state.messages.append({"role": "assistant", "content": st.session_state.sim_response})
     else:
         with st.sidebar:
-            st.info("""Click the green person-icon, pause 3 seconds, and begin to speak with natural speech.  \n\nAs soon as you pause, the LLM will start its response.""")
+            st.info("Click the green person-icon, pause 3 seconds, and begin to speak with natural speech.\
+                    As soon as you pause, the LLM will start its response.")
             audio_bytes = audio_recorder(
-            text="Click, pause, speak:",
-            recording_color="#e8b62c",
-            neutral_color="#6aa36f",
-            icon_name="user",
-            icon_size="3x",
+                text="Click, pause, speak:",
+                recording_color="#e8b62c",
+                neutral_color="#6aa36f",
+                icon_name="user",
+                icon_size="3x",
             )
+
         if audio_bytes:
-            # Save audio bytes to a temporary file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as fp:
-                fp.write(audio_bytes)
-                audio_file_path = fp.name
-            with st.spinner("Transcribing audio... Please wait."):
-                prompt = transcribe_audio(audio_file_path)
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            # Display user message in chat message container
-            with st.chat_message("user", avatar="👩‍⚕️"):
-                st.markdown(prompt)
-                
-            # Clear audio_bytes after processing
+            try:
+                # Save audio bytes to a temporary file
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
+                    temp_file.write(audio_bytes)
+                    audio_file_path = temp_file.name
+                    
+                                # Inform about audio file size
+                file_stats = os.stat(audio_file_path)
+                # st.write("We have audio bytes!!! Length: ", file_stats.st_size)
+                if st.session_state["last_audio_size"] != file_stats.st_size:
+
+                    with st.spinner("Transcribing audio... Please wait."):
+                        prompt = transcribe_audio(audio_file_path)
+
+                    st.session_state.messages.append({"role": "user", "content": prompt})
+
+                    # Display user message in chat message container
+                    with st.chat_message("user", avatar="👩‍⚕️"):
+                        st.markdown(prompt)
+                        
+                    
+
+
+
+            finally:
+                # Ensure the tempfile is removed regardless of success or failure in processing
+                if 'audio_file_path' in locals():
+                    os.remove(audio_file_path)
+                    # st.write("Temporary audio file removed.")
+
+            # Clearing audio bytes manually, might be redundant if no other operations store this variable
             audio_bytes = None
-            # Remove the temporary file after processing
-            os.remove(audio_file_path)
-                
+
+            if st.session_state["last_audio_size"] != file_stats.st_size:    
                 # Display assistant response in chat message container
-            with st.chat_message("assistant", avatar="🤒"):
-                with st.spinner("Answering... Please wait."):        
-                    stream = groq_client.chat.completions.create(
-                        model=st.session_state["model"],
-                        messages=[
-                            {"role": m["role"], "content": m["content"]}
-                            for m in st.session_state.messages
-                        ],
-                        temperature=0.3,
-                        stream=True,
-                    )
-                st.session_state.sim_response = st.write_stream(parse_groq_stream(stream))
-                
-            st.session_state.messages.append({"role": "assistant", "content": st.session_state.sim_response})
+                with st.chat_message("assistant", avatar="🤒"):
+                    with st.spinner("Answering... Please wait."):        
+                        stream = groq_client.chat.completions.create(
+                            model=st.session_state["model"],
+                            messages=[
+                                {"role": m["role"], "content": m["content"]}
+                                for m in st.session_state.messages
+                            ],
+                            temperature=0.3,
+                            stream=True,
+                        )
+                    st.session_state.sim_response = st.write_stream(parse_groq_stream(stream))
+                    
+                st.session_state.messages.append({"role": "assistant", "content": st.session_state.sim_response})
+                st.session_state["last_audio_size"] = file_stats.st_size
                 
     
     if st.session_state.audio_off == False:
@@ -308,7 +332,8 @@ if check_password():
                 talk_stream("tts-1", st.session_state.voice, st.session_state.sim_response)
             autoplay_local_audio("last_interviewer.mp3")
             st.info("Note - this is an AI synthesized voice.")            
-            st.session_state.sim_response = ""    
+            st.session_state.sim_response = "" 
+            os.remove("last_interviewer.mp3")   
                 
 
     if st.session_state["sim_response"]:
@@ -321,6 +346,7 @@ if check_password():
         st.session_state.conversation_string = conversation_str
         html = markdown2.markdown(conversation_str, extras=["tables"])
         st.download_button('Download the conversation when done!', html, f'sim_response.html', 'text/html')
+        st.session_state.sim_response = ""
     
     orders = st.sidebar.checkbox("Write Orders", value=False)
     if orders:
