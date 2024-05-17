@@ -226,13 +226,18 @@ if check_password():
     input_source = st.radio("Choose to type or speak!", ("Text", "Microphone"), index=0)
     st.session_state.audio_off = st.checkbox("Turn off voice generation", value=False) 
     # Display chat messages from history on app rerun
+    conversation_str = extracted_section + "\n\n" + "______" + "\n\n" + "**Clinical Interview:**\n\n"
     for message in st.session_state.messages:
         if message["role"] == "user":
             with st.chat_message(message["role"], avatar="👩‍⚕️"):
                 st.markdown(message["content"])
+                conversation_str += "👩‍⚕️: " + message["content"] + "\n\n"
         elif message["role"] == "assistant":
             with st.chat_message(message["role"], avatar="🤒"):
                 st.markdown(message["content"])
+                conversation_str += "🤒: " + message["content"] + "\n\n"
+    conversation_str += "______" + "\n\n" + "**Orders:**\n\n" + st.session_state.orders_placed +  "**Results:**\n\n""\n\n" + st.session_state.results + "\n\n"
+    st.session_state.conversation_string = conversation_str
 
 
 
@@ -336,17 +341,17 @@ if check_password():
             os.remove("last_interviewer.mp3")   
                 
 
-    if st.session_state["sim_response"]:
-        conversation_str = ""
-        for message in st.session_state.messages:
-            if message["role"] == "user":
-                conversation_str += "👩‍⚕️: " + message["content"] + "\n\n"
-            elif message["role"] == "assistant":
-                conversation_str += "🤒: " + message["content"] + "\n\n"
-        st.session_state.conversation_string = conversation_str
-        html = markdown2.markdown(conversation_str, extras=["tables"])
-        st.download_button('Download the conversation when done!', html, f'sim_response.html', 'text/html')
-        st.session_state.sim_response = ""
+    # if st.session_state["sim_response"]:
+    #     conversation_str = ""
+    #     for message in st.session_state.messages:
+    #         if message["role"] == "user":
+    #             conversation_str += "👩‍⚕️: " + message["content"] + "\n\n"
+    #         elif message["role"] == "assistant":
+    #             conversation_str += "🤒: " + message["content"] + "\n\n"
+    #     st.session_state.conversation_string = conversation_str
+    #     html = markdown2.markdown(conversation_str, extras=["tables"])
+    #     st.download_button('Download the conversation when done!', html, f'sim_response.html', 'text/html')
+    #     st.session_state.sim_response = ""
     
     orders = st.sidebar.checkbox("Write Orders", value=False)
     if orders:
@@ -365,8 +370,13 @@ if check_password():
                 st.write(st.session_state.orders_placed)
             with st.expander("All Results", expanded = False):
                 st.write(st.session_state.results)
+
+    
+    html2 = markdown2.markdown(st.session_state.conversation_string, extras=["tables"])
+    st.sidebar.download_button('Download the transcript!', html2, f'transcript.html', 'text/html')
     st.sidebar.divider()         
     assess = st.sidebar.checkbox("Assess Interaction", value=False)
+    
     if assess:
         student_level = st.sidebar.selectbox("Student Level", ["1st Year Medical Student", "2nd Year Medical Student", "3rd Year Medical Student", "4th Year Medical Student"])
         prompt = assessment_prompt.format(student_level = student_level, case_details=st.session_state.final_case, conversation_transcript=st.session_state.conversation_string, orders_placed=st.session_state.orders_placed, results=st.session_state.results)
@@ -383,8 +393,7 @@ if check_password():
         if st.session_state.assessment:
             with st.expander("Assessment", expanded = False):
                 st.write(st.session_state.assessment)
-            if st.session_state.assessment:
-                html = markdown2.markdown(st.session_state.assessment, extras=["tables"])
-                st.sidebar.download_button('Download the assessment when done!', html, f'assessment.html', 'text/html')
+            html = markdown2.markdown(st.session_state.assessment, extras=["tables"])
+            st.sidebar.download_button('Download the assessment when done!', html, f'assessment.html', 'text/html')
         
         

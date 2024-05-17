@@ -55,6 +55,7 @@ output_format = """
 - **Findings**: `{{physical_exam_details}}`
 
 ### Diagnostic Reasoning:
+- **Essential HPI Details User Should Elicit**: `{{essential_hpi_details}}`
 - **Differential Diagnoses**: `{{differential_diagnoses}}`
 - **Rationale**: `{{diagnostic_reasoning}}`
 
@@ -80,7 +81,7 @@ output_format = """
 - **SpO2**: `{{spo2}}`
 """
 
-sim_persona = """```markdown
+sim_persona = """
 ### Create a Patient Persona for Case Study Simulation
 
 Given a comprehensive set of details from a clinical case file, craft a patient persona who aligns with the provided information in an empathetic, realistic, and nuanced manner. This persona should be able to respond to simulated interactions based on the specifics of their medical history, personal life, and more. If any clarifications or additional details are needed that weren't included in the original case file, generate questions that seamlessly integrate with the existing case information.
@@ -130,11 +131,11 @@ Given the specified orders, alongside the patient case, create a set of results 
 **Guidelines:**
 
 - Ensure the results directly tie back to and are consistent with the patient scenario described.
-- Only if medications were included in the orders, include a note on their administration status and any resultant reactions, maintaining consistency with the patient's detailed case.
+- When medications are included in the orders, include a note on their administration status and any resultant reactions, maintaining consistency with the patient's detailed case.
 - Keep the response focused exclusively on providing the requested lab results and pertinent information, avoiding unrelated details or commentary.
 - Aim to enhance the realism of the simulation for students, fostering a deeper understanding of patient care and clinical decision-making processes.
 
-Example (N.B no additional words provided at all. This is the goal - simply generate the results):
+**Generate results without commentary about matching the case details.**
 
 Sample User Input: 
 d-dimer
@@ -164,8 +165,8 @@ Given the inputs of a student's level (e.g., first-year medical student) and det
    - **Scoring:** Rate on a scale of 1-5, where 1 is lacking and 5 is exceptional.
 
 2. **Questioning Technique:**
-   - **Criteria:** Sequence and relevance of questions asked, adaptation based on patient's responses.
-   - **Scoring:** Rate on a scale of 1-5, considering both the appropriateness and adaptiveness of questioning.
+   - **Criteria:** Sequence and relevance of questions asked, adaptation based on patient's responses. Were essential HPI details elicited?
+   - **Scoring:** Rate on a scale of 1-5, considering both the appropriateness and adaptiveness of questioning and whether essential details were obtained.
 
 3. **Clinical Orders:**
    - **Criteria:** Relevance and timeliness of orders placed in response to the patient’s condition.
