@@ -17,6 +17,76 @@ from llama_index.core import Document
 from prompts import *
 import markdown2
  
+from sqlalchemy import create_engine, Column, Integer, String, Text, MetaData, Index
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import or_
+
+# Function to save a transcript
+def save_transcript(transcript_content, role, specialty):
+    new_transcript = Transcript(content=transcript_content, role=role, specialty=specialty)
+    session.add(new_transcript)
+    session.commit()
+
+# Function to save an assessment
+def save_assessment(assessment_content, role, specialty):
+    new_assessment = Assessment(content=assessment_content, role=role, specialty=specialty)
+    session.add(new_assessment)
+    session.commit()
+
+# Function to save case details
+def save_case_details(case_details_content, role, specialty):
+    new_case_details = CaseDetails(content=case_details_content, role=role, specialty=specialty)
+    session.add(new_case_details)
+    session.commit()
+
+# Function to retrieve records with full-text search and wildcards
+def get_records(model, search_text=None, role=None, specialty=None):
+    query = session.query(model)
+    if search_text:
+        search_text = f"%{search_text}%"  # Wildcard search
+        query = query.filter(model.content.ilike(search_text))
+    if role:
+        query = query.filter_by(role=role)
+    if specialty:
+        query = query.filter_by(specialty=specialty)
+    return query.all()
+
+# Database setup
+DATABASE_URL = "sqlite:///app_data.db"  # SQLite database
+
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
+session = Session()
+Base = declarative_base()
+
+# Define the models
+class Transcript(Base):
+    __tablename__ = 'transcripts'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    content = Column(Text, nullable=False)
+    role = Column(String, nullable=False)
+    specialty = Column(String, nullable=True)
+    __table_args__ = (Index('transcript_content_idx', 'content', postgresql_using='gin'),)
+
+class Assessment(Base):
+    __tablename__ = 'assessments'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    content = Column(Text, nullable=False)
+    role = Column(String, nullable=False)
+    specialty = Column(String, nullable=True)
+    __table_args__ = (Index('assessment_content_idx', 'content', postgresql_using='gin'),)
+
+class CaseDetails(Base):
+    __tablename__ = 'case_details'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    content = Column(Text, nullable=False)
+    role = Column(String, nullable=False)
+    specialty = Column(String, nullable=True)
+    __table_args__ = (Index('case_details_content_idx', 'content', postgresql_using='gin'),)
+
+# Create tables
+Base.metadata.create_all(engine)
 
 st.set_page_config(page_title='My AI Team', layout = 'centered', page_icon = ':stethoscope:', initial_sidebar_state = 'auto')
 
