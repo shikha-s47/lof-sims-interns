@@ -55,7 +55,13 @@ st.set_page_config(
 def init_session():
     if "final_case" not in st.session_state:
         st.session_state["final_case"] = ""
-        
+    if "retrieved_case" not in st.session_state:
+        st.session_state["retrieved_case"] = ""
+    if "retrieved_name" not in st.session_state:
+        st.session_state["retrieved_name"] = ""
+    if "selected_case_id" not in st.session_state:
+        st.session_state["selected_case_id"] = -1
+
 # Function to save a transcript
 def save_transcript(transcript_content, role, specialty):
     new_transcript = Transcript(content=transcript_content, role=role, specialty=specialty)
@@ -228,6 +234,8 @@ if check_password():
 
                 if st.session_state["final_case"] != "":
                     if st.button("Send case to the simulator!"):
+                        st.session_state["final_case"] = st.session_state.final_case  # Ensure the case is correctly set
+                        st.session_state["retrieved_name"] = st.session_state.retrieved_name
                         st.page_link("pages/🧠_Sim_Chat.py", label="Click Here to Wake the Simulator", icon="🧠")
 
         with col3:
@@ -241,13 +249,20 @@ if check_password():
                     specialty = st.text_input("Specialty", "")
 
                 if st.button("Save Case to the Database to use Again"):
-                    st.warning("You may need to click a second time to view the message that it was saved!")
                     if saved_name:
                         save_case_details(case_details, saved_name, selected_role, specialty)
                         st.success("Case Details saved successfully!")
                     else:
                         st.error("Saved Name is required to save the case")
 
+    # Initialize session state variables
+    # Initialize session state variables
+    if "search_results" not in st.session_state:
+        st.session_state.search_results = []
+    if "selected_case" not in st.session_state:
+        st.session_state.selected_case = None
+
+    # Tab2 content for retrieving and selecting cases
     with tab2:
         st.header("Retrieve Records")
         search_text = st.text_input("Search Text")
@@ -258,12 +273,19 @@ if check_password():
             search_specialty = st.text_input("Search by Specialty", "")
 
         if st.button("Search Cases"):
-            case_details = get_records(CaseDetails, search_text, search_saved_name, search_role, search_specialty)
+            st.session_state.search_results = get_records(CaseDetails, search_text, search_saved_name, search_role, search_specialty)
 
+        if st.session_state.search_results:
             st.subheader("Case Details")
-            for i, c in enumerate(case_details):
-                st.write(f"Saved Name: {c.saved_name}, Role: {c.role}, Specialty: {c.specialty}")
-                st.write(c.content)
+            for i, case in enumerate(st.session_state.search_results):
+                st.write(f"Saved Name: {case.saved_name}, Role: {case.role}, Specialty: {case.specialty}")
                 if st.button(f"Select Case {i+1}", key=f"select_case_{i}"):
-                    st.session_state.final_case = c.content
-                    st.success(f"Case {i+1} selected and saved to session state!")
+                    st.session_state.selected_case = case
+
+        if st.session_state.selected_case:
+            st.subheader("Selected Case")
+            st.write(f'Here is the retrieved case name: {st.session_state.selected_case.saved_name}')
+            st.write(st.session_state.selected_case.content)
+            st.session_state.final_case = st.session_state.selected_case.content
+            st.page_link("pages/🧠_Sim_Chat.py", label="Click Here to Wake the Simulator", icon="🧠")
+
