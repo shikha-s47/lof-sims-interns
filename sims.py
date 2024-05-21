@@ -76,7 +76,7 @@ if check_password():
     if "expanded" not in st.session_state:
         st.session_state["expanded"] = True
 
-    col1, col2, col3 = st.columns([1,0.5,4])
+    col1, col2, col3 = st.columns([1,0.75,4])
 
     with col1:    
         st.info("**Include desired history in the text paragraph. The AI will generate additional details as needed to draft an educational case.**")
