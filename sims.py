@@ -393,6 +393,7 @@ if check_password():
                         st.warning('Please edit the case as needed while leaving other characters, e.g., "#" and "*", in place. Remember to update the Door Chart section at the bottom!')
                         updated_retrieved_case = st.text_area("Edit Case, enter control-enter or command-enter to save edits!", st.session_state.selected_case.content, height=1000)
                         make_new_entry = st.checkbox("If desired, make a database entry when saving edits.", value=False)
+                        pdf_retrieved_case = st.checkbox("Download PDF for retrieved case", value=False)
                         if make_new_entry:
                             saved_name = st.text_input("Saved Name after edits (Required to save case)")
                         if st.button("Save Edits"):
@@ -404,6 +405,10 @@ if check_password():
                                     st.success("Case Details saved successfully!")
                                 else:
                                     st.error("Saved Name is required to save the case")
+                            if pdf_retrieved_case:
+                                html_to_pdf(st.session_state.final_case, 'retrieved_case.pdf')
+                                with open("retrieved_case.pdf", "rb") as f:
+                                    st.download_button("Download Retrieved Case PDF", f, "retrieved_case.pdf")
                     # st.session_state.sidebar_state = 'expanded'        
                     st.page_link("pages/🧠_Sim_Chat.py", label="Wake the Simulator ", icon="🧠")
             
