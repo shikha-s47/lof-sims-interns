@@ -295,7 +295,7 @@ if check_password():
             with col2:
                 st.info("Download or edit the case and begin the simulator!")
                 html = markdown2.markdown(st.session_state.response_markdown, extras=["tables"])
-                st.download_button('Download HTML Case file', html, f'case.html', 'text/html')
+                # st.download_button('Download HTML Case file', html, f'case.html', 'text/html')
                 if st.button("Generate Case PDF file"):
                     html_to_pdf(html, 'case.pdf')
                     with open("case.pdf", "rb") as f:
