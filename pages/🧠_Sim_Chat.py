@@ -14,7 +14,7 @@ import requests
 import json
 import base64
 import random
-from sims import llm_call, PDF
+from ..sims import llm_call, PDF
 
 # st.set_page_config(page_title='Simulated Chat', layout = 'centered', page_icon = ':stethoscope:', initial_sidebar_state = 'expanded')
 
