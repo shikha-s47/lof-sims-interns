@@ -8,6 +8,7 @@ from fpdf import FPDF
 from sqlalchemy import create_engine, Column, Integer, String, Text, MetaData, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+# from st_pages import show_pages, hide_pages, Page
 
 # Database setup
 DATABASE_URL = "sqlite:///app_data.db"  # SQLite database
@@ -218,6 +219,16 @@ init_session()
 
 if check_password():
     st.info("**Provide inputs and generate a case! Open the left sidebar to change models; default is inexpensive Haiku.**")
+    
+    with st.expander("Model Options for Case Generation (Claude3 Haiku by default)", expanded=False):
+        model_choice = st.selectbox("Model Options", (
+            "anthropic/claude-3-haiku",
+            "anthropic/claude-3-sonnet", 
+            "anthropic/claude-3-opus", 
+            "openai/gpt-4-turbo", 
+            "google/gemini-pro", 
+            "meta-llama/llama-2-70b-chat",
+        ), index=0)
 
     if "response_markdown" not in st.session_state:
         st.session_state["response_markdown"] = ""
@@ -237,15 +248,6 @@ if check_password():
         with col1:    
             st.info("**Include desired history in the text paragraph. The AI will generate additional details as needed to draft an educational case.**")
                 
-            with st.sidebar:
-                model_choice = st.selectbox("Model Options", (
-                    "anthropic/claude-3-haiku",
-                    "anthropic/claude-3-sonnet", 
-                    "anthropic/claude-3-opus", 
-                    "openai/gpt-4-turbo", 
-                    "google/gemini-pro", 
-                    "meta-llama/llama-2-70b-chat",
-                ), index=0)
                 
             learning_objectives = st.multiselect(
                 "Select one or more learning objectives; default is a focused history/examination",
@@ -293,7 +295,7 @@ if check_password():
                     st.session_state.expanded = False
             
             with col2:
-                st.info("Review and/or edit the case and begin the simulator! Download from the sidebar.")                  
+                st.info("Review and/or edit the case and begin the simulator!")                  
             
                 if st.checkbox("Edit Case (Scroll Down)", value=False):
                     with col3:
@@ -309,6 +311,16 @@ if check_password():
                         st.page_link("pages/🧠_Sim_Chat.py", label="Click Here to Wake the Simulator (including any saved edits)", icon="🧠")
                 else:
                     st.session_state["final_case"] = st.session_state.response_markdown
+                
+                if st.session_state.final_case is not "":        
+                    case_html = markdown2.markdown(st.session_state.final_case, extras=["tables"])
+                        # st.download_button('Download HTML Case file', html, f'case.html', 'text/html')
+                        
+                    # st.info("Download the Current Case:")
+                    if st.checkbox("Generate Case PDF file"):
+                        html_to_pdf(case_html, 'case.pdf')
+                        with open("case.pdf", "rb") as f:
+                            st.download_button("Download Case PDF", f, "case.pdf")
 
                 if st.session_state["final_case"] != "":
                     if st.button("Send case to the simulator!"):
@@ -336,6 +348,9 @@ if check_password():
                     else:
                         st.error("Saved Name is required to save the case")
 
+
+    
+    
     # Initialize session state variables
     # Initialize session state variables
     if "search_results" not in st.session_state:
@@ -397,14 +412,6 @@ if check_password():
             st.page_link("pages/🧠_Sim_Chat.py", label="Click Here to Wake the Simulator", icon="🧠")
     
     
-    with st.sidebar:
-        if st.session_state.final_case is not "":        
-            case_html = markdown2.markdown(st.session_state.final_case, extras=["tables"])
-                # st.download_button('Download HTML Case file', html, f'case.html', 'text/html')
-                
-            st.info("Download the Current Case:")
-            if st.button("Generate Case PDF file"):
-                html_to_pdf(case_html, 'case.pdf')
-                with open("case.pdf", "rb") as f:
-                    st.download_button("Download Case PDF", f, "case.pdf")
+
+
 
