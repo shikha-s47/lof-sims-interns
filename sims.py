@@ -293,14 +293,7 @@ if check_password():
                     st.session_state.expanded = False
             
             with col2:
-                st.info("Download or edit the case and begin the simulator!")
-                html = markdown2.markdown(st.session_state.response_markdown, extras=["tables"])
-                # st.download_button('Download HTML Case file', html, f'case.html', 'text/html')
-                if st.button("Generate Case PDF file"):
-                    html_to_pdf(html, 'case.pdf')
-                    with open("case.pdf", "rb") as f:
-                        st.download_button("Download Case PDF", f, "case.pdf")
-                    
+                st.info("Review and/or edit the case and begin the simulator! Download from the sidebar.")                  
             
                 if st.checkbox("Edit Case (Scroll Down)", value=False):
                     with col3:
@@ -402,4 +395,16 @@ if check_password():
                             st.error("Saved Name is required to save the case")
             # st.session_state.sidebar_state = 'expanded'        
             st.page_link("pages/🧠_Sim_Chat.py", label="Click Here to Wake the Simulator", icon="🧠")
+    
+    
+    with st.sidebar:
+        if st.session_state.final_case is not "":        
+            case_html = markdown2.markdown(st.session_state.final_case, extras=["tables"])
+                # st.download_button('Download HTML Case file', html, f'case.html', 'text/html')
+                
+            st.info("Download the Current Case:")
+            if st.button("Generate Case PDF file"):
+                html_to_pdf(case_html, 'case.pdf')
+                with open("case.pdf", "rb") as f:
+                    st.download_button("Download Case PDF", f, "case.pdf")
 
