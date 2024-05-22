@@ -3,7 +3,8 @@ import markdown2
 import json
 import requests
 from sim_prompts import *  # Ensure this import provides the needed functionality
-
+from bs4 import BeautifulSoup
+from fpdf import FPDF
 from sqlalchemy import create_engine, Column, Integer, String, Text, MetaData, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -49,8 +50,78 @@ st.set_page_config(
     page_title='Simulated Case Generator',
     page_icon='🌌',
     layout="wide",
-    initial_sidebar_state='collapsed'
+    initial_sidebar_state='auto'
 )
+
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 12)
+        self.cell(0, 10, self.title, 0, 1, "C")
+        self.ln(10)
+
+    def chapter_title(self, title, level=1):
+        if level == 1:
+            self.set_font("Arial", "B", 16)
+            self.ln(10)
+        elif level == 2:
+            self.set_font("Arial", "B", 14)
+            self.ln(8)
+        elif level == 3:
+            self.set_font("Arial", "B", 12)
+            self.ln(6)
+        self.cell(0, 10, title, 0, 1, "L")
+        self.ln(2)
+
+    def chapter_body(self, body):
+        self.set_font("Arial", "", 12)
+        self.multi_cell(0, 10, body)
+        self.ln()
+
+    def add_list(self, items, is_ordered=False):
+        self.set_font("Arial", "", 12)
+        for i, item in enumerate(items, start=1):
+            if is_ordered:
+                self.multi_cell(0, 10, f"{i}. {item}")
+            else:
+                self.multi_cell(0, 10, f"- {item}")
+        self.ln()
+
+def html_to_pdf(html_content, name):
+    # Use BeautifulSoup to parse the HTML
+    soup = BeautifulSoup(html_content, "html.parser")
+    
+    # Extract title for the document
+    case_title_tag = soup.find("h1")
+    case_title = case_title_tag.get_text() if case_title_tag else "Document"
+    
+    # Create PDF instance with dynamic title
+    pdf = PDF()
+    pdf.title = case_title
+    pdf.add_page()
+
+    # Process each section of the HTML
+    for element in soup.find_all(["h1", "h2", "h3", "p", "ul", "ol", "li", "hr"]):
+        if element.name == "h1":
+            pdf.chapter_title(element.get_text(), level=1)
+        elif element.name == "h2":
+            if "Patient Door Chart" in element.get_text():
+                pdf.add_page()
+            pdf.chapter_title(element.get_text(), level=2)
+        elif element.name == "h3":
+            pdf.chapter_title(element.get_text(), level=3)
+        elif element.name == "p":
+            pdf.chapter_body(element.get_text())
+        elif element.name == "ul":
+            items = [li.get_text() for li in element.find_all("li")]
+            pdf.add_list(items, is_ordered=False)
+        elif element.name == "ol":
+            items = [li.get_text() for li in element.find_all("li")]
+            pdf.add_list(items, is_ordered=True)
+        elif element.name == "hr":
+            pdf.add_page()
+    
+    # Output the PDF
+    pdf.output(name)
 
 def init_session():
     if "final_case" not in st.session_state:
@@ -224,7 +295,12 @@ if check_password():
             with col2:
                 st.info("Download or edit the case and begin the simulator!")
                 html = markdown2.markdown(st.session_state.response_markdown, extras=["tables"])
-                st.download_button('Download the Case', html, f'case.html', 'text/html')
+                st.download_button('Download HTML Case file', html, f'case.html', 'text/html')
+                if st.button("Generate Case PDF file"):
+                    html_to_pdf(html, 'case.pdf')
+                    with open("case.pdf", "rb") as f:
+                        st.download_button("Download Case PDF", f, "case.pdf")
+                    
             
                 if st.checkbox("Edit Case (Scroll Down)", value=False):
                     with col3:
@@ -236,6 +312,7 @@ if check_password():
                             st.success("Case Edits Saved!")
                             if edited_new_case:
                                 st.session_state["final_case"] = edited_new_case
+                        # st.session_state.sidebar_state = 'expanded'
                         st.page_link("pages/🧠_Sim_Chat.py", label="Click Here to Wake the Simulator (including any saved edits)", icon="🧠")
                 else:
                     st.session_state["final_case"] = st.session_state.response_markdown
@@ -244,6 +321,7 @@ if check_password():
                     if st.button("Send case to the simulator!"):
                         st.session_state["final_case"] = st.session_state.final_case  # Ensure the case is correctly set
                         st.session_state["retrieved_name"] = st.session_state.retrieved_name
+                        # st.session_state.sidebar_state = 'expanded'
                         st.page_link("pages/🧠_Sim_Chat.py", label="Click Here to Wake the Simulator", icon="🧠")
 
         with col3:
@@ -322,6 +400,6 @@ if check_password():
                             st.success("Case Details saved successfully!")
                         else:
                             st.error("Saved Name is required to save the case")
-                    
+            # st.session_state.sidebar_state = 'expanded'        
             st.page_link("pages/🧠_Sim_Chat.py", label="Click Here to Wake the Simulator", icon="🧠")
 

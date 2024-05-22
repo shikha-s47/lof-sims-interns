@@ -4,6 +4,8 @@ import markdown2
 from groq import Groq
 from openai import OpenAI
 import os
+from bs4 import BeautifulSoup
+from fpdf import FPDF
 
 from audio_recorder_streamlit import audio_recorder
 from prompts import *
@@ -12,9 +14,10 @@ import requests
 import json
 import base64
 import random
-from sims import llm_call
+from sims import llm_call, html_to_pdf, PDF
 
-st.set_page_config(page_title='Simulated Chat', layout = 'centered', page_icon = ':stethoscope:', initial_sidebar_state = 'expanded')
+# st.set_page_config(page_title='Simulated Chat', layout = 'centered', page_icon = ':stethoscope:', initial_sidebar_state = 'expanded')
+
 
 def assign_random_voice(sex):
     """
@@ -39,6 +42,42 @@ def assign_random_voice(sex):
     
     return voice
 
+def transcript_to_pdf(html_content, name):   
+     # Use BeautifulSoup to parse the HTML
+    html_content = html_content.replace('🤒', 'Patient').replace('👩‍⚕️', 'Doctor')
+    html_content = html_content.encode('latin-1', 'ignore').decode('latin-1')
+    soup = BeautifulSoup(html_content, "html.parser")
+    
+    
+    # Extract title for the document
+    title = "Patient Case"
+    
+    # Create PDF instance and set the title
+    pdf = PDF()
+    pdf.title = title
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=12)
+
+    # Process each section of the HTML
+    for element in soup.find_all(["h2", "h3", "p", "ul", "ol", "li", "hr"]):
+        if element.name == "h2":
+            pdf.chapter_title(element.get_text(), level=2)
+        elif element.name == "h3":
+            pdf.chapter_title(element.get_text(), level=3)
+        elif element.name == "p":
+            pdf.chapter_body(element.get_text())
+        elif element.name == "ul":
+            items = [li.get_text() for li in element.find_all("li")]
+            pdf.add_list(items, is_ordered=False)
+        elif element.name == "ol":
+            items = [li.get_text() for li in element.find_all("li")]
+            pdf.add_list(items, is_ordered=True)
+        elif element.name == "hr":
+            pdf.add_page()
+    
+    # Output the PDF
+    pdf.output(name, 'F')
 
 
 def transcribe_audio(audio_file_path):
@@ -422,9 +461,15 @@ if check_password():
 
     
     html2 = markdown2.markdown(st.session_state.conversation_string, extras=["tables"])
-    st.sidebar.download_button('Download the transcript!', html2, f'transcript.html', 'text/html')
-    st.sidebar.divider()         
-    assess = st.sidebar.checkbox("Assess Interaction", value=False)
+    # st.sidebar.download_button('Download the transcript!', html2, f'transcript.html', 'text/html')
+    
+    with st.sidebar:
+        if st.button("Generate Transcript PDF file"):
+            transcript_to_pdf(html2, 'transcript.pdf')
+            with open("transcript.pdf", "rb") as f:
+                st.download_button("Download Transcript PDF", f, "transcript.pdf")
+        st.divider()         
+        assess = st.checkbox("Assess Interaction", value=False)
     
     if assess:
         student_level = st.sidebar.selectbox("Student Level", ["1st Year Medical Student", "2nd Year Medical Student", "3rd Year Medical Student", "4th Year Medical Student"])
@@ -443,6 +488,13 @@ if check_password():
             with st.expander("Assessment", expanded = False):
                 st.write(st.session_state.assessment)
             html = markdown2.markdown(st.session_state.assessment, extras=["tables"])
-            st.sidebar.download_button('Download the assessment when done!', html, f'assessment.html', 'text/html')
+            # st.sidebar.download_button('Download the assessment when done!', html, f'assessment.html', 'text/html')
+            with st.sidebar:
+                if st.button("Generate Assessment PDF file"):
+                    transcript_to_pdf(html, 'assessment.pdf')
+                    with open("assessment.pdf", "rb") as f:
+                        st.download_button("Download Assessment PDF", f, "assessment.pdf")
+                # st.divider()         
+                # assess = st.checkbox("Assess Interaction", value=False)
         
         
