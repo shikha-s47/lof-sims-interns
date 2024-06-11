@@ -1,0 +1,13 @@
+Changes proposed in Case Simulator:-
+1. Downloading all files in Word format instead of PDF
+2. Making entering details in fields like Case Description and Primary Diagnosis mandatory so that empty case is not generated
+3. Combining Place Orders, Generate a History, Assess Interation PDF files into one single file
+4. AI-Generated 'Suggested Management Plan':
+    This plan could include:
+    Investigations: Tests, imaging, diagnostics.
+    Medications: Changes, additions, dosages.
+    Education: Patient information.
+    Follow-Up: Next visit timing and goals.
+5. Based on the case details and findings can suggest only one specific assess interaction.
+6.Can add functionalities like:
+    Interactive diagnosis, lab test access, interaction on how to treat further, suggestions for further treatmet.
